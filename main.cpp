@@ -25,16 +25,21 @@ struct KD_Tree {
     }
 };
 
-City parseCity(string input) {
+//Break down the input to get the city information by using sstream library
+City parseCity(string input) 
+{    
     stringstream ss(input);
     string token;
     City city;
 
+    //Get the city name
     getline(ss, city.name, ',');
 
+    //Get the city latitude as a string and convert to float
     getline(ss, token, ',');
     city.lat = stof(token);
 
+    //Get the city longitude as a string and convert to float
     getline(ss, token, ',');
     city.lng = stof(token);
 
@@ -47,14 +52,18 @@ City parseCity(string input) {
     return city;
 }
 
-vector<City> readFile(string FileName) {
+//Read the given file and get the essential information
+vector<City> readFile(string FileName) 
+{
     ifstream fin(FileName);
     string s;
 
+    //read the first line and ignore it
     getline(fin, s);
 
     vector<City> vec;
-    while (getline(fin, s)) {
+    while (getline(fin, s)) 
+    {
         City newCity = parseCity(s);
         vec.push_back(newCity);
     }
@@ -67,6 +76,7 @@ vector<City> readFile(string FileName) {
 // KD_TREE 
 /////////////////////////////////////////////////////////////
 
+//Create a KD_Tree's node
 KD_Tree* createNode(City city)
 {
     KD_Tree* res = new KD_Tree;
@@ -74,6 +84,7 @@ KD_Tree* createNode(City city)
     return res;
 }
 
+//Insert a node to a KD-Tree
 KD_Tree* insertNode(KD_Tree* root, City city, int depth) {
     if (!root) {
         return createNode(city);
@@ -100,12 +111,15 @@ KD_Tree* insertNode(KD_Tree* root, City city, int depth) {
     return root;
 }
 
-KD_Tree* createTree(vector<City> city){
+//Create a KD-Tree with given data
+KD_Tree* createTree(vector<City> city)
+{
     KD_Tree* root = NULL;
     int size = city.size();
 
-    for (int i = 0; i < size; i++) {
-    root = insertNode(root, city[i], 0);
+    for (int i = 0; i < size; i++) 
+    {
+        root = insertNode(root, city[i], 0);
     }
 
     return root;
@@ -113,20 +127,26 @@ KD_Tree* createTree(vector<City> city){
 
 ///////////////////////////////////////////
 
+//Convert degree to radian
 double radian(float value) {
     return value * pi / 180;
 }
 
-float distance(City city1, City city2) {
+//Haversine Formula
+float distance(City city1, City city2) 
+{
     double lat1 = radian(city1.lat);
     double lng1 = radian(city1.lng);
     double lat2 = radian(city2.lat);
     double lng2 = radian(city2.lng);
+
     double a = pow(sin((lat2 - lat1) / 2), 2) + cos(lat1) * cos(lat2) * pow(sin((lng2 - lng1) / 2), 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
     return R * c;
 }
 
+//Find the nearest neighbor of the given geographic coordinates
 void nearest_neighbor(KD_Tree* root, City city, double& min_des, City& result, int depth) {
     if (root == NULL) {
         return;
@@ -182,26 +202,40 @@ void nearest_neighbor(KD_Tree* root, City city, double& min_des, City& result, i
 
 ///////////////////////////////////////////
 
+//if the city's coordinates inside the given range, the function will return true, otherwise return false
 bool inside(City city, City min, City max)
 {
     return (city.lat >= min.lat && city.lng >= min.lng && city.lat <= max.lat && city.lng <= max.lng);
 }
 
+//Find all citys within the given region
 void rangeSearch(KD_Tree* root, City min, City max, int level, vector<City>& range)
 {
+    //Base case to terminate the recursive call
     if (!root) return;
 
+    //Use inside function above to determine the city's coordinates inside the region or not
     if (inside(root->city, min, max)) range.push_back(root->city);
+
+    //Consider the condition (follow latitude or longitude) in order to determine which region is considered next
+    //Follow longtitude
     if (level % 2 != 0)
     {
+        //if the root's longitude is smaller than the bottom longitude, we will only choose the root's right subtree to determine
         if (root->city.lng < min.lng) rangeSearch(root->pRight, min, max, level + 1, range);
+
+        //If not, we continue determining the root's longitude is greater than the top longitue or not
         else if (root->city.lng > max.lng) rangeSearch(root->pLeft, min, max, level + 1, range);
+
+        //If root's longitude inside the given region, we will consider both left subtree and right subtree
         else
         {
             rangeSearch(root->pRight, min, max, level + 1, range);
             rangeSearch(root->pLeft, min, max, level + 1, range);
         }
     }
+
+    //Follow latitude
     else
     {
         if (root->city.lat < min.lat) rangeSearch(root->pRight, min, max, level + 1, range);
@@ -362,7 +396,7 @@ void printToFile(KD_Tree* node, ofstream& fp)
     if (!node)
         return;
     printToFile(node->pLeft, fp);
-    fp << node->city.name << " " << node->city.lat << " " << node->city.lng << "\n";
+    fp << node->city.name << "," << node->city.lat << "," << node->city.lng << "\n";
     printToFile(node->pRight, fp);
 }
 
