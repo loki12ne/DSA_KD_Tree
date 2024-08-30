@@ -90,6 +90,8 @@ KD_Tree* insertNode(KD_Tree* root, City city, int depth) {
         return createNode(city);
     }
 
+    if (root->city.lat == city.lat && root->city.lng == city.lng) return root;
+
     // follow lat when depth is even
     if (!(depth % 2)) {
         if (root->city.lat < city.lat) {
