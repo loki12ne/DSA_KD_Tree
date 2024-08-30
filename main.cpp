@@ -131,7 +131,7 @@ void nearest_neighbor(KD_Tree* root, City city, double& min_des, City& result, i
     if (root == NULL) {
         return;
     }
-
+	// compare min_des with the root
     double dist = distance(root->city, city);
     if (dist < min_des && city.name != root->city.name) {
         min_des = dist;
@@ -139,6 +139,7 @@ void nearest_neighbor(KD_Tree* root, City city, double& min_des, City& result, i
     }
     KD_Tree* nextBranch = NULL;
     KD_Tree* oppositeBranch = NULL;
+	// update nextBrance and oppositeBrance for next recursion by counting the depth
     if (!(depth % 2)) {
         if (city.lat < root->city.lat) {
             nextBranch = root->pLeft;
@@ -159,7 +160,9 @@ void nearest_neighbor(KD_Tree* root, City city, double& min_des, City& result, i
             oppositeBranch = root->pLeft;
         }
     }
+	//go into the leaf to find the min_des with each nextBranch
     nearest_neighbor(nextBranch, city, min_des, result, depth + 1);
+	// backtracking to compare the min_des from the node of nextBranch with the nodes of oppositeBranch
     double temp;
     if (!(depth % 2)) {
         City c;
@@ -175,6 +178,7 @@ void nearest_neighbor(KD_Tree* root, City city, double& min_des, City& result, i
         c.lng = root->city.lng;
         temp = distance(c, city);
     }
+	// if the min_des is higher the distance to oppositeBrach, there may have other nodes nearer given cooperations
     if (temp < min_des) {
         nearest_neighbor(oppositeBranch, city, min_des, result, depth + 1);
     }
