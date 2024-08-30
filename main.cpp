@@ -357,6 +357,15 @@ void print(KD_Tree* node)
     print(node->pRight);
 }
 
+void printToFile(KD_Tree* node, ofstream& fp)
+{
+    if (!node)
+        return;
+    printToFile(node->pLeft, fp);
+    fp << node->city.name << " " << node->city.lat << " " << node->city.lng << "\n";
+    printToFile(node->pRight, fp);
+}
+
 void RangeSearch(KD_Tree* node)
 {
     vector<City> res;
@@ -403,6 +412,30 @@ void WriteCitytoFile(KD_Tree* root)
     getline(cin, token);
 }
 
+void Output(KD_Tree* node)
+{
+    int choice;
+    cout << "\n1. To console";
+    cout << "\n2. To file";
+    cout << "\nEnter your choice: ";
+    cin >> choice;
+    if (choice == 1)
+    {
+        cout << "\nCityName - Latitude - Longitude\n";
+        print(node);
+    }
+    else if (choice == 2)
+    {
+        string filename;
+        cout << "\nEnter file name: ";
+        cin.ignore();
+        getline(cin, filename);
+        ofstream fp(filename);
+        fp << "city_name, latitude, longitude\n";
+        printToFile(node, fp);
+
+    }
+}
 
 void ReconstructKD_Tree(KD_Tree*& root)
 {
@@ -430,6 +463,7 @@ void userInterface()
     {
         system("cls");
         cout << "===========================================\n";
+        cout << "0. Output\n";
         cout << "1. Load cities from a file\n";
         cout << "2. Insert a new city\n";
         cout << "3. Insert multiple new cities\n";
@@ -442,7 +476,7 @@ void userInterface()
         cout << "Enter your choice: ";
         int choice;
         cin >> choice;
-        if (choice < 1 || choice > 8)
+        if (choice < 0 || choice > 8)
         {
             continue;
         }
@@ -455,6 +489,9 @@ void userInterface()
         {
             switch (choice)
             {
+            case 0:
+                Output(node);
+                break;
             case 1:
                 node = loadCity();
                 break;
