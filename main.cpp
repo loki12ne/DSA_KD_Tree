@@ -362,7 +362,7 @@ void printToFile(KD_Tree* node, ofstream& fp)
     if (!node)
         return;
     printToFile(node->pLeft, fp);
-    fp << node->city.name << " " << node->city.lat << " " << node->city.lng << "\n";
+    fp << node->city.name << "," << node->city.lat << "," << node->city.lng << "\n";
     printToFile(node->pRight, fp);
 }
 
