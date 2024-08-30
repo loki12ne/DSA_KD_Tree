@@ -258,24 +258,26 @@ KD_Tree* deserialize(ifstream& fin)
 {
     int name_length;
     int lat_length, lng_length;
+	//first read the name  to see if root is null or not
     fin.read((char*)&name_length, sizeof(name_length));
-    if (name_length == 0)
+    if (name_length == 0) 
         return nullptr;
     char* tmp = new char[name_length];
     fin.read(tmp, name_length);
     tmp[name_length - 1] = '\0'; // 
-
-    if (strcmp(tmp, "invalid") == 0)
+ 
+    if (strcmp(tmp, "invalid") == 0) // if name = invalid, it is a null pointer
     {
         delete[] tmp; // 
         return nullptr;
     }
     fin.read((char*)&lat_length, sizeof(lat_length));
     fin.read((char*)&lng_length, sizeof(lng_length));
-
+	
+	// if it is not a null pointer, assign the name, lat, lng of the city of root with variables read from file
     KD_Tree* root = new KD_Tree;
     root->city.name = tmp;
-    delete[] tmp; // 
+    delete[] tmp; 
 
     fin.read((char*)&root->city.lat, sizeof(root->city.lat));
     fin.read((char*)&root->city.lng, sizeof(root->city.lng));
@@ -287,9 +289,10 @@ KD_Tree* deserialize(ifstream& fin)
 
 void serialize(KD_Tree*& root, ofstream& fout)
 {
+	// if tree is null or the algorithm goes to the leaf node
     if (root == NULL)
     {
-        char tmp[] = "invalid";
+        char tmp[] = "invalid"; // write city name = invalid , doesn't need to write lat and lng
         int size = strlen(tmp) + 1;
         fout.write((char*)&size, sizeof(size));
         fout.write(tmp, size);
@@ -301,14 +304,15 @@ void serialize(KD_Tree*& root, ofstream& fout)
     int name_length = tmp.size() + 1;
     int lat_length = sizeof(root->city.lat);
     int lng_length = sizeof(root->city.lng);
-
+	// write the lengths of the variables in sequence, then write the variables themselves
+	// save the address of pointer point to those variable, not save the value
     fout.write((char*)&name_length, sizeof(name_length));
     fout.write(s, name_length);
     fout.write((char*)&lat_length, sizeof(lat_length));
     fout.write((char*)&lng_length, sizeof(lng_length));
     fout.write((char*)&root->city.lat, lat_length);
     fout.write((char*)&root->city.lng, lng_length);
-
+	// continue to write node on the left and right of the root
     serialize(root->pLeft, fout);
     serialize(root->pRight, fout);
 }
